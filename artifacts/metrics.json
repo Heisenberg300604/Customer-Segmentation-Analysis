@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-11-16T15:41:11+00:00",
+  "trained_at": "2026-11-16T15:49:38+00:00",
   "n_rows": 3900,
   "selection_rule": "See config.py: Kneedle elbow per feature set -> quality gate -> continuous-feature eligibility -> highest silhouette.",
   "feature_sets": {

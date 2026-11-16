@@ -87,8 +87,9 @@ def run_selection(df: pd.DataFrame) -> dict:
 
     chosen, k, reason = segmentation.choose(candidates, config.PRIMARY_FEATURE_SET)
 
-    scaler = StandardScaler().fit(pipeline.build_features(df, chosen.features))
-    X = scaler.transform(pipeline.build_features(df, chosen.features))
+    scaler = StandardScaler().fit(
+        pipeline.build_features(df, chosen.features).to_numpy())
+    X = scaler.transform(pipeline.build_features(df, chosen.features).to_numpy())
     kmeans = KMeans(k, n_init=config.KMEANS_N_INIT,
                     random_state=config.RANDOM_STATE).fit(X)
     labels_map = segmentation.label_clusters(df[chosen.features], kmeans.labels_)

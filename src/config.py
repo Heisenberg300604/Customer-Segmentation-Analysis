@@ -143,3 +143,35 @@ TRAIT_Z = 0.5
 
 # Surrogate explanation: a shallow decision tree trained on cluster labels.
 SURROGATE_MAX_DEPTH = 3
+
+# ---------------------------------------------------------------------------
+# Column mapper defaults (page 4)
+# ---------------------------------------------------------------------------
+# Pre-filled "label -> purchases per year" table for text frequency columns.
+# The retail labels come first; a few common extras follow. Any other label
+# is left blank and the user must type a number before continuing.
+DEFAULT_FREQUENCY_LABELS = {
+    **FREQUENCY_TO_PER_YEAR,
+    "Daily": 365,
+    "Twice a Week": 104,
+    "Every 2 Weeks": 26,
+    "Twice a Month": 24,
+    "Every 2 Months": 6,
+    "Every 6 Months": 2,
+    "Semi-Annually": 2,
+    "Yearly": 1,
+}
+
+# ---------------------------------------------------------------------------
+# "Fit on my data" guards (page 4, Mode B)
+# ---------------------------------------------------------------------------
+FIT_MIN_ROWS = 50
+FIT_MAX_ROWS = 200_000
+FIT_SILHOUETTE_SAMPLE = 5_000
+FIT_MAX_K = 8
+FIT_ROWS_PER_K = 20            # k_max = min(FIT_MAX_K, n_rows // FIT_ROWS_PER_K)
+FIT_CORR_WARN = 0.9
+FIT_SMALL_CLUSTER_WARN = 0.02
+
+# Upload limits
+MAX_UPLOAD_MB = 50

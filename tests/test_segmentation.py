@@ -67,7 +67,7 @@ def test_rfm_names():
                       "frequency": [20] * 10 + [1] * 10,
                       "monetary": [900] * 10 + [30] * 10})
     names = segmentation.label_clusters(X, np.array([0] * 10 + [1] * 10))
-    assert names == {0: "Champions", 1: "At-Risk / Dormant"}
+    assert names == {0: "Champions", 1: "Dormant / Lost"}
 
 
 def test_choose_rejects_all_discrete_sets():

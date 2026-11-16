@@ -206,23 +206,57 @@ def _retail_k3_names(z: pd.DataFrame, means: pd.DataFrame) -> dict[int, str] | N
 
 
 def _rfm_name(zrow: pd.Series) -> str | None:
-    """Classic RFM reading, derived from z-scores (low recency = recent)."""
+    """Classic RFM reading, derived from z-scores (low recency = recent).
+
+    Rules, first match wins (t = TRAIT_Z):
+      recent, frequent and high-spending      -> Champions
+      recent and (frequent or high-spending)  -> Loyal Active
+      recent, below-average frequency         -> New / Promising
+      recent, otherwise                       -> Active Regulars
+      long ago, at least average frequency    -> At-Risk (was regular)
+      long ago, below-average frequency       -> Dormant / Lost
+    """
     cols = {"recency_days", "frequency", "monetary"}
     if not cols.issubset(zrow.index):
         return None
     r, f, m = zrow["recency_days"], zrow["frequency"], zrow["monetary"]
     t = config.TRAIT_Z
-    if r <= -t and f >= t and m >= t:
-        return "Champions"
-    if r <= -t and (f >= t or m >= t):
-        return "Loyal Active"
-    if r >= t and (f >= t or m >= t):
-        return "At-Risk (was valuable)"
-    if r >= t and f <= 0:
-        return "At-Risk / Dormant"
-    if r <= -t and f < t:
-        return "New / Promising"
+    if r <= -t:
+        if f >= t and m >= t:
+            return "Champions"
+        if f >= t or m >= t:
+            return "Loyal Active"
+        return "New / Promising" if f < 0 else "Active Regulars"
+    if r >= t:
+        return "At-Risk (was regular)" if f >= 0 else "Dormant / Lost"
     return None
+
+
+def _dedupe(names: dict[int, str], z: pd.DataFrame) -> dict[int, str]:
+    """Make names unique using the feature where the clashing clusters differ
+    most: the highest gets that feature's 'high' word, the lowest its 'low'
+    word (e.g. 'Dormant / Lost · Big-Spender' vs '... · Low-Value')."""
+    names = dict(names)
+    counts = pd.Series(list(names.values())).value_counts()
+    for dup in counts[counts > 1].index:
+        members = [c for c, n in names.items() if n == dup]
+        spread = z.loc[members].max() - z.loc[members].min()
+        feat = spread.idxmax()
+        ranked = z.loc[members, feat].sort_values()
+        for i, c in enumerate(ranked.index):
+            if i == len(ranked) - 1:
+                suffix = _trait_word(feat, True)
+            elif i == 0:
+                suffix = _trait_word(feat, False)
+            else:
+                suffix = f"Mid {_trait_word(feat, True)}"
+            names[c] = f"{dup} · {suffix}"
+    # Last resort (identical profiles): number them.
+    counts = pd.Series(list(names.values())).value_counts()
+    for dup in counts[counts > 1].index:
+        for i, c in enumerate(sorted(c for c, n in names.items() if n == dup)):
+            names[c] = f"{dup} #{i + 1}"
+    return names
 
 
 def label_clusters(df_features: pd.DataFrame, labels: np.ndarray) -> dict[int, str]:
@@ -235,7 +269,7 @@ def label_clusters(df_features: pd.DataFrame, labels: np.ndarray) -> dict[int, s
          furthest from the overall mean (|z| >= TRAIT_Z), e.g.
          'High-Frequency · Discount-Driven'. Clusters with no strong trait are
          'Mid-Range'.
-    Duplicate names get a short distinguishing suffix. Never 'Cluster 0'.
+    Clashing names are split by the feature where those clusters differ most. Never 'Cluster 0'.
     The mapping depends only on cluster profiles, so it is stable across runs.
     """
     z = cluster_z_scores(df_features, labels)
@@ -255,20 +289,7 @@ def label_clusters(df_features: pd.DataFrame, labels: np.ndarray) -> dict[int, s
             name = " · ".join(traits) if traits else "Mid-Range"
         names[int(cluster)] = name
 
-    # Make names unique: add the next most distinctive trait, then a number.
-    counts = pd.Series(list(names.values())).value_counts()
-    for dup in counts[counts > 1].index:
-        members = [c for c, n in names.items() if n == dup]
-        for i, c in enumerate(sorted(members, key=lambda c: -z.loc[c].abs().sum())):
-            zrow = z.loc[c].reindex(z.loc[c].abs().sort_values(ascending=False).index)
-            extra = _trait_word(zrow.index[0], zrow.iloc[0] > 0)
-            candidate = f"{dup} ({extra})" if extra not in dup else f"{dup} ({i + 1})"
-            names[c] = candidate
-    counts = pd.Series(list(names.values())).value_counts()
-    for dup in counts[counts > 1].index:
-        for i, c in enumerate(sorted(c for c, n in names.items() if n == dup)):
-            names[c] = f"{dup} #{i + 1}"
-    return names
+    return _dedupe(names, z)
 
 
 # ---------------------------------------------------------------------------
