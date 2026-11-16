@@ -39,7 +39,7 @@ def _canonical(name: str) -> str:
     return config.COLUMN_ALIASES.get(snake, snake)
 
 
-def _normalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
+def normalise_column_names(df: pd.DataFrame) -> pd.DataFrame:
     """Return a copy of df whose columns are canonical snake_case names."""
     out = df.copy()
     out.columns = [_canonical(c) for c in out.columns]
@@ -51,7 +51,7 @@ _YES_VALUES = {"yes", "y", "true", "t", "1", "1.0"}
 _NO_VALUES = {"no", "n", "false", "f", "0", "0.0"}
 
 
-def _normalise_yes_no(series: pd.Series, column: str,
+def normalise_yes_no(series: pd.Series, column: str,
                       strict: bool) -> pd.Series:
     """Map yes/no-like values to exactly 'Yes' or 'No'.
 
@@ -135,7 +135,7 @@ def clean(
             + ", ".join(missing_model)
         )
 
-    out = _normalise_column_names(df)
+    out = normalise_column_names(df)
 
     # 2. Strip whitespace in every text column.
     for col in out.select_dtypes(include=["object", "string"]).columns:
@@ -144,7 +144,7 @@ def clean(
     # 3. Yes/No columns.
     for col in config.YES_NO_COLUMNS:
         if col in out.columns:
-            out[col] = _normalise_yes_no(
+            out[col] = normalise_yes_no(
                 out[col], col, strict=(col == "discount_applied")
             )
 
@@ -175,7 +175,7 @@ def clean(
 
     # 6. Impute review ratings by category median.
     if "review_rating" in out.columns:
-        out["review_rating"] = _impute_rating(
+        out["review_rating"] = impute_rating(
             out, rating_medians, global_rating_median
         )
 
@@ -198,7 +198,7 @@ def rating_medians_by_category(df: pd.DataFrame) -> tuple[dict[str, float], floa
     return {str(k): float(v) for k, v in medians.items()}, global_median
 
 
-def _impute_rating(
+def impute_rating(
     df: pd.DataFrame,
     rating_medians: dict[str, float] | None,
     global_rating_median: float | None,
@@ -250,13 +250,21 @@ def engineer_features(
     """
     out = df.copy()
 
-    out["purchase_rate_per_year"] = (
-        out["frequency_of_purchases"].map(config.FREQUENCY_TO_PER_YEAR).astype(float)
-    )
-    out["purchase_frequency_days"] = (
-        (365 / out["purchase_rate_per_year"]).round().astype(int)
-    )
-    out["discount_flag"] = (out["discount_applied"] == "Yes").astype(int)
+    # Purchases per year. Mapped (foreign) data may already carry this column,
+    # computed from the user's own label -> number table; keep it if so.
+    if ("purchase_rate_per_year" not in out.columns
+            and "frequency_of_purchases" in out.columns):
+        out["purchase_rate_per_year"] = (
+            out["frequency_of_purchases"].map(config.FREQUENCY_TO_PER_YEAR)
+            .astype(float))
+    if "purchase_rate_per_year" in out.columns:
+        rate = out["purchase_rate_per_year"].where(out["purchase_rate_per_year"] > 0)
+        days = (365 / rate).round()
+        out["purchase_frequency_days"] = (
+            days.astype(int) if days.notna().all() else days)
+
+    if "discount_flag" not in out.columns and "discount_applied" in out.columns:
+        out["discount_flag"] = (out["discount_applied"] == "Yes").astype(int)
 
     if "age" in out.columns and out["age"].notna().any():
         if age_bin_edges is None:
@@ -307,3 +315,17 @@ def prepare(
 def load_raw(path=config.RAW_DATA_PATH) -> pd.DataFrame:
     """Read a raw CSV, tolerating a UTF-8 byte-order mark."""
     return pd.read_csv(path, encoding="utf-8-sig")
+
+
+def age_quartile_groups(age: pd.Series) -> pd.Series:
+    """Age groups for a *foreign* file: its own age quartiles, labelled with
+    their ranges (e.g. 'Q1 18–30'), because the retail training edges and
+    names do not apply to other customer bases."""
+    age = pd.to_numeric(age, errors="coerce")
+    if age.notna().sum() < 4:
+        return pd.Series(np.nan, index=age.index, dtype=object)
+    groups, edges = pd.qcut(age, 4, retbins=True, duplicates="drop")
+    labels = [f"Q{i + 1} {edges[i]:.0f}–{edges[i + 1]:.0f}"
+              for i in range(len(edges) - 1)]
+    out = pd.qcut(age, 4, labels=labels, duplicates="drop")
+    return out.astype(str).replace("nan", np.nan)

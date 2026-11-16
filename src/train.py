@@ -49,7 +49,7 @@ def load_training_data() -> tuple[pd.DataFrame, dict]:
 
     # Medians are taken from the ratings that were actually given (before
     # imputation), exactly as clean() does internally for training data.
-    ratings = pipeline._normalise_column_names(raw)
+    ratings = pipeline.normalise_column_names(raw)
     ratings["review_rating"] = pd.to_numeric(ratings["review_rating"],
                                              errors="coerce")
     medians, global_median = pipeline.rating_medians_by_category(ratings)

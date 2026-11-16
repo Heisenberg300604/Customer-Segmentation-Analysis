@@ -348,11 +348,21 @@ def predict(df_raw: pd.DataFrame, artifact: dict) -> pd.DataFrame:
         global_rating_median=artifact.get("global_rating_median"),
         age_bin_edges=artifact.get("age_bin_edges"),
     )
-    X = pipeline.build_features(df, artifact["feature_names"])
+    return predict_features(df, artifact)
+
+
+def predict_features(df: pd.DataFrame, artifact: dict) -> pd.DataFrame:
+    """Assign segments to an already cleaned + engineered DataFrame.
+
+    Used by predict() and by 'Apply trained model' on page 4, where the data
+    came through the column mapper instead of pipeline.clean().
+    """
+    out = df.copy()
+    X = pipeline.build_features(out, artifact["feature_names"])
     ids = artifact["kmeans"].predict(artifact["scaler"].transform(X.to_numpy()))
-    df["segment_id"] = ids
-    df["segment"] = pd.Series(ids, index=df.index).map(artifact["labels_map"])
-    return df
+    out["segment_id"] = ids
+    out["segment"] = pd.Series(ids, index=out.index).map(artifact["labels_map"])
+    return out
 
 
 def training_stats(X: pd.DataFrame) -> dict:
