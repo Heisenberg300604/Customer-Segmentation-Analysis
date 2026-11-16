@@ -74,6 +74,7 @@ def run_selection(df: pd.DataFrame) -> dict:
     """
     candidates = []
     k3_sizes = {}
+    k3_profiles = {}
     for name, features in config.FEATURE_SETS.items():
         X = StandardScaler().fit_transform(pipeline.build_features(df, features))
         sweep = segmentation.kmeans_sweep(X, config.K_RANGE)
@@ -82,8 +83,15 @@ def run_selection(df: pd.DataFrame) -> dict:
         km3 = KMeans(3, n_init=config.KMEANS_N_INIT,
                      random_state=config.RANDOM_STATE).fit(X)
         names = segmentation.label_clusters(df[features], km3.labels_)
-        sizes = pd.Series(km3.labels_).map(names).value_counts()
-        k3_sizes[name] = {str(k): int(v) for k, v in sizes.items()}
+        seg3 = pd.Series(km3.labels_, index=df.index).map(names)
+        k3_sizes[name] = {str(k): int(v) for k, v in seg3.value_counts().items()}
+        prof3 = df.assign(segment=seg3).groupby("segment").agg(
+            customers=("purchase_amount", "size"),
+            purchase_rate_per_year=("purchase_rate_per_year", "mean"),
+            avg_spend=("purchase_amount", "mean"),
+            discount_usage_pct=("discount_flag", lambda s: 100 * s.mean()),
+        ).round(2).sort_values("customers", ascending=False)
+        k3_profiles[name] = prof3.reset_index().to_dict(orient="records")
 
     chosen, k, reason = segmentation.choose(candidates, config.PRIMARY_FEATURE_SET)
 
@@ -93,7 +101,8 @@ def run_selection(df: pd.DataFrame) -> dict:
     kmeans = KMeans(k, n_init=config.KMEANS_N_INIT,
                     random_state=config.RANDOM_STATE).fit(X)
     labels_map = segmentation.label_clusters(df[chosen.features], kmeans.labels_)
-    return {"candidates": candidates, "k3_sizes": k3_sizes, "chosen": chosen,
+    return {"candidates": candidates, "k3_sizes": k3_sizes,
+            "k3_profiles": k3_profiles, "chosen": chosen,
             "k": k, "reason": reason, "scaler": scaler, "kmeans": kmeans,
             "X": X, "labels": kmeans.labels_, "labels_map": labels_map}
 
@@ -107,7 +116,18 @@ def biweekly_sensitivity(df: pd.DataFrame, base: dict) -> dict:
     res = run_selection(alt)
     seg_base = pd.Series(base["labels"]).map(base["labels_map"])
     seg_alt = pd.Series(res["labels"]).map(res["labels_map"])
+
+    def top_rate_labels(frame: pd.DataFrame, segs: pd.Series) -> dict:
+        """Frequency labels inside the segment with the highest purchase rate."""
+        segs = segs.set_axis(frame.index)
+        top = frame.groupby(segs)["purchase_rate_per_year"].mean().idxmax()
+        counts = frame.loc[segs == top, "frequency_of_purchases"].value_counts()
+        return {"segment": str(top),
+                "labels": {str(k): int(v) for k, v in counts.items()}}
+
     return {
+        "top_rate_segment_default": top_rate_labels(df, seg_base),
+        "top_rate_segment_104": top_rate_labels(alt, seg_alt),
         "bi_weekly_per_year_tested": 104,
         "chosen_feature_set": res["chosen"].name,
         "chosen_k": res["k"],
@@ -204,6 +224,21 @@ def surrogate_tree(df_features: pd.DataFrame, segments: pd.Series) -> dict:
     }
 
 
+def data_facts(df: pd.DataFrame) -> dict:
+    """Facts about the data that explain the clustering results."""
+    feats = config.FEATURE_SETS[config.PRIMARY_FEATURE_SET]
+    corr = df[feats].corr().abs()
+    off_diag = corr.where(~np.eye(len(feats), dtype=bool)).stack()
+    return {
+        "max_abs_correlation_between_features": round(float(off_diag.max()), 4),
+        "distinct_values": {f: int(df[f].nunique()) for f in feats},
+        "weekly_rows": int((df["frequency_of_purchases"] == "Weekly").sum()),
+        "subscribers_using_discount_pct": round(float(
+            100 * (df.loc[df["subscription_status"] == "Yes", "discount_flag"]
+                   .mean())), 2),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -268,6 +303,7 @@ def main() -> dict:
                 "passes_gate": c.passes_gate,
                 "notes": c.notes,
                 "segment_sizes_at_k3": res["k3_sizes"][c.name],
+                "profile_at_k3": res["k3_profiles"][c.name],
             } for c in res["candidates"]},
         "chosen": {
             "feature_set": chosen.name,
@@ -277,12 +313,16 @@ def main() -> dict:
             "reason": res["reason"],
         },
         "segment_profile": profile.reset_index().to_dict(orient="records"),
+        "data_facts": data_facts(df),
         "pca": pca_info,
         "surrogate_tree": surrogate,
         "bi_weekly_sensitivity": sensitivity,
     }
     config.METRICS_PATH.write_text(json.dumps(metrics, indent=2, default=str))
     _print_summary(metrics, profile)
+
+    from src import make_docs  # docs are generated from metrics.json
+    make_docs.main()
     return metrics
 
 

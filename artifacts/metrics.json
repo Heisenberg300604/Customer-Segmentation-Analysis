@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-11-16T15:49:38+00:00",
+  "trained_at": "2026-11-16T16:21:42+00:00",
   "n_rows": 3900,
   "selection_rule": "See config.py: Kneedle elbow per feature set -> quality gate -> continuous-feature eligibility -> highest silhouette.",
   "feature_sets": {
@@ -64,7 +64,30 @@
         "Discount-Driven": 1677,
         "Full-Price \u00b7 Budget": 1114,
         "Big-Spender \u00b7 Full-Price": 1109
-      }
+      },
+      "profile_at_k3": [
+        {
+          "segment": "Discount-Driven",
+          "customers": 1677,
+          "purchase_rate_per_year": 17.56,
+          "avg_spend": 59.28,
+          "discount_usage_pct": 100.0
+        },
+        {
+          "segment": "Full-Price \u00b7 Budget",
+          "customers": 1114,
+          "purchase_rate_per_year": 18.07,
+          "avg_spend": 39.54,
+          "discount_usage_pct": 0.0
+        },
+        {
+          "segment": "Big-Spender \u00b7 Full-Price",
+          "customers": 1109,
+          "purchase_rate_per_year": 16.74,
+          "avg_spend": 80.82,
+          "discount_usage_pct": 0.0
+        }
+      ]
     },
     "rate_disc": {
       "features": [
@@ -127,7 +150,30 @@
         "Full-Price Loyal": 1918,
         "Discount-Driven Regular": 1443,
         "High-Frequency Shoppers": 539
-      }
+      },
+      "profile_at_k3": [
+        {
+          "segment": "Full-Price Loyal",
+          "customers": 1918,
+          "purchase_rate_per_year": 11.91,
+          "avg_spend": 60.22,
+          "discount_usage_pct": 0.0
+        },
+        {
+          "segment": "Discount-Driven Regular",
+          "customers": 1443,
+          "purchase_rate_per_year": 11.97,
+          "avg_spend": 59.45,
+          "discount_usage_pct": 100.0
+        },
+        {
+          "segment": "High-Frequency Shoppers",
+          "customers": 539,
+          "purchase_rate_per_year": 52.0,
+          "avg_spend": 58.97,
+          "discount_usage_pct": 43.41
+        }
+      ]
     },
     "rate_amt_disc": {
       "features": [
@@ -189,7 +235,30 @@
         "Full-Price Loyal": 1918,
         "Discount-Driven Regular": 1443,
         "High-Frequency Shoppers": 539
-      }
+      },
+      "profile_at_k3": [
+        {
+          "segment": "Full-Price Loyal",
+          "customers": 1918,
+          "purchase_rate_per_year": 11.91,
+          "avg_spend": 60.22,
+          "discount_usage_pct": 0.0
+        },
+        {
+          "segment": "Discount-Driven Regular",
+          "customers": 1443,
+          "purchase_rate_per_year": 11.97,
+          "avg_spend": 59.45,
+          "discount_usage_pct": 100.0
+        },
+        {
+          "segment": "High-Frequency Shoppers",
+          "customers": 539,
+          "purchase_rate_per_year": 52.0,
+          "avg_spend": 58.97,
+          "discount_usage_pct": 43.41
+        }
+      ]
     },
     "rate_prev_disc": {
       "features": [
@@ -251,7 +320,30 @@
         "Full-Price Loyal": 1918,
         "Discount-Driven Regular": 1443,
         "High-Frequency Shoppers": 539
-      }
+      },
+      "profile_at_k3": [
+        {
+          "segment": "Full-Price Loyal",
+          "customers": 1918,
+          "purchase_rate_per_year": 11.91,
+          "avg_spend": 60.22,
+          "discount_usage_pct": 0.0
+        },
+        {
+          "segment": "Discount-Driven Regular",
+          "customers": 1443,
+          "purchase_rate_per_year": 11.97,
+          "avg_spend": 59.45,
+          "discount_usage_pct": 100.0
+        },
+        {
+          "segment": "High-Frequency Shoppers",
+          "customers": 539,
+          "purchase_rate_per_year": 52.0,
+          "avg_spend": 58.97,
+          "discount_usage_pct": 43.41
+        }
+      ]
     }
   },
   "chosen": {
@@ -327,6 +419,17 @@
       "description": "Buys ~52\u00d7/yr, 43% use a discount, avg spend $58.97, 26 previous purchases, mostly Clothing"
     }
   ],
+  "data_facts": {
+    "max_abs_correlation_between_features": 0.0235,
+    "distinct_values": {
+      "purchase_rate_per_year": 5,
+      "purchase_amount": 81,
+      "previous_purchases": 50,
+      "discount_flag": 2
+    },
+    "weekly_rows": 539,
+    "subscribers_using_discount_pct": 100.0
+  },
   "pca": {
     "explained_variance_ratio": [
       0.3414403282310302,
@@ -344,6 +447,18 @@
     "rules": "|--- purchase_amount <= 60.5\n|   |--- discount_flag <= 0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Full-Price \u00b7 Budget\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|   |--- discount_flag >  0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Discount-Driven \u00b7 Budget\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|--- purchase_amount >  60.5\n|   |--- discount_flag <= 0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Big-Spender \u00b7 Full-Price\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|   |--- discount_flag >  0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Discount-Driven \u00b7 Big-Spender\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n"
   },
   "bi_weekly_sensitivity": {
+    "top_rate_segment_default": {
+      "segment": "High-Frequency",
+      "labels": {
+        "Weekly": 539
+      }
+    },
+    "top_rate_segment_104": {
+      "segment": "High-Frequency",
+      "labels": {
+        "Bi-Weekly": 547
+      }
+    },
     "bi_weekly_per_year_tested": 104,
     "chosen_feature_set": "rate_amt_disc",
     "chosen_k": 5,
