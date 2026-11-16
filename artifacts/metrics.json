@@ -1,0 +1,361 @@
+{
+  "trained_at": "2026-11-16T15:41:11+00:00",
+  "n_rows": 3900,
+  "selection_rule": "See config.py: Kneedle elbow per feature set -> quality gate -> continuous-feature eligibility -> highest silhouette.",
+  "feature_sets": {
+    "prd_4": {
+      "features": [
+        "purchase_rate_per_year",
+        "purchase_amount",
+        "previous_purchases",
+        "discount_flag"
+      ],
+      "sweep": [
+        {
+          "k": 2,
+          "inertia": 11696.5307,
+          "silhouette": 0.2721,
+          "min_cluster_share": 0.43
+        },
+        {
+          "k": 3,
+          "inertia": 10000.281,
+          "silhouette": 0.2353,
+          "min_cluster_share": 0.2844
+        },
+        {
+          "k": 4,
+          "inertia": 8126.4772,
+          "silhouette": 0.2674,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 5,
+          "inertia": 7039.0452,
+          "silhouette": 0.2742,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 6,
+          "inertia": 6153.2318,
+          "silhouette": 0.2741,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 7,
+          "inertia": 5495.3137,
+          "silhouette": 0.2812,
+          "min_cluster_share": 0.1105
+        },
+        {
+          "k": 8,
+          "inertia": 4931.9388,
+          "silhouette": 0.2818,
+          "min_cluster_share": 0.1131
+        }
+      ],
+      "elbow_k": 4,
+      "silhouette_at_elbow": 0.2674,
+      "min_cluster_share_at_elbow": 0.1382,
+      "eligible": true,
+      "passes_gate": true,
+      "notes": [],
+      "segment_sizes_at_k3": {
+        "Discount-Driven": 1677,
+        "Full-Price \u00b7 Budget": 1114,
+        "Big-Spender \u00b7 Full-Price": 1109
+      }
+    },
+    "rate_disc": {
+      "features": [
+        "purchase_rate_per_year",
+        "discount_flag"
+      ],
+      "sweep": [
+        {
+          "k": 2,
+          "inertia": 3899.9267,
+          "silhouette": 0.5741,
+          "min_cluster_share": 0.43
+        },
+        {
+          "k": 3,
+          "inertia": 1800.6133,
+          "silhouette": 0.6747,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 4,
+          "inertia": 994.8569,
+          "silhouette": 0.7369,
+          "min_cluster_share": 0.1803
+        },
+        {
+          "k": 5,
+          "inertia": 505.6521,
+          "silhouette": 0.8077,
+          "min_cluster_share": 0.0782
+        },
+        {
+          "k": 6,
+          "inertia": 132.0801,
+          "silhouette": 0.8702,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 7,
+          "inertia": 63.2202,
+          "silhouette": 0.908,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 8,
+          "inertia": 12.1557,
+          "silhouette": 0.9366,
+          "min_cluster_share": 0.06
+        }
+      ],
+      "elbow_k": 4,
+      "silhouette_at_elbow": 0.7369,
+      "min_cluster_share_at_elbow": 0.1803,
+      "eligible": false,
+      "passes_gate": true,
+      "notes": [
+        "all features are discrete -> not eligible"
+      ],
+      "segment_sizes_at_k3": {
+        "Full-Price Loyal": 1918,
+        "Discount-Driven Regular": 1443,
+        "High-Frequency Shoppers": 539
+      }
+    },
+    "rate_amt_disc": {
+      "features": [
+        "purchase_rate_per_year",
+        "purchase_amount",
+        "discount_flag"
+      ],
+      "sweep": [
+        {
+          "k": 2,
+          "inertia": 7798.6913,
+          "silhouette": 0.3684,
+          "min_cluster_share": 0.43
+        },
+        {
+          "k": 3,
+          "inertia": 5699.0313,
+          "silhouette": 0.4083,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 4,
+          "inertia": 4230.6949,
+          "silhouette": 0.4065,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 5,
+          "inertia": 3143.2435,
+          "silhouette": 0.4334,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 6,
+          "inertia": 2603.0602,
+          "silhouette": 0.4616,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 7,
+          "inertia": 2224.0324,
+          "silhouette": 0.4594,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 8,
+          "inertia": 1964.6186,
+          "silhouette": 0.4595,
+          "min_cluster_share": 0.0782
+        }
+      ],
+      "elbow_k": 5,
+      "silhouette_at_elbow": 0.4334,
+      "min_cluster_share_at_elbow": 0.1382,
+      "eligible": true,
+      "passes_gate": true,
+      "notes": [],
+      "segment_sizes_at_k3": {
+        "Full-Price Loyal": 1918,
+        "Discount-Driven Regular": 1443,
+        "High-Frequency Shoppers": 539
+      }
+    },
+    "rate_prev_disc": {
+      "features": [
+        "purchase_rate_per_year",
+        "previous_purchases",
+        "discount_flag"
+      ],
+      "sweep": [
+        {
+          "k": 2,
+          "inertia": 7797.7661,
+          "silhouette": 0.3689,
+          "min_cluster_share": 0.43
+        },
+        {
+          "k": 3,
+          "inertia": 5698.8418,
+          "silhouette": 0.4089,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 4,
+          "inertia": 4260.4746,
+          "silhouette": 0.403,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 5,
+          "inertia": 3187.7601,
+          "silhouette": 0.4264,
+          "min_cluster_share": 0.1382
+        },
+        {
+          "k": 6,
+          "inertia": 2646.3705,
+          "silhouette": 0.4551,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 7,
+          "inertia": 2264.1292,
+          "silhouette": 0.4526,
+          "min_cluster_share": 0.06
+        },
+        {
+          "k": 8,
+          "inertia": 1980.8105,
+          "silhouette": 0.4637,
+          "min_cluster_share": 0.0585
+        }
+      ],
+      "elbow_k": 5,
+      "silhouette_at_elbow": 0.4264,
+      "min_cluster_share_at_elbow": 0.1382,
+      "eligible": true,
+      "passes_gate": true,
+      "notes": [],
+      "segment_sizes_at_k3": {
+        "Full-Price Loyal": 1918,
+        "Discount-Driven Regular": 1443,
+        "High-Frequency Shoppers": 539
+      }
+    }
+  },
+  "chosen": {
+    "feature_set": "rate_amt_disc",
+    "features": [
+      "purchase_rate_per_year",
+      "purchase_amount",
+      "discount_flag"
+    ],
+    "k": 5,
+    "silhouette": 0.4334,
+    "reason": "'rate_amt_disc' has the highest silhouette (0.433) at its elbow k=5 among eligible feature sets that pass the quality gate (silhouette >= 0.25, smallest cluster >= 5%)."
+  },
+  "segment_profile": [
+    {
+      "segment": "Full-Price \u00b7 Budget",
+      "customers": 967,
+      "pct_of_base": 24.79,
+      "avg_purchase_rate_per_year": 12.06,
+      "avg_spend": 39.68,
+      "avg_previous_purchases": 24.72,
+      "discount_usage_pct": 0.0,
+      "subscriber_pct": 0.0,
+      "top_category": "Clothing",
+      "description": "Buys ~12\u00d7/yr, 0% use a discount, avg spend $39.68, 25 previous purchases, mostly Clothing"
+    },
+    {
+      "segment": "Big-Spender \u00b7 Full-Price",
+      "customers": 951,
+      "pct_of_base": 24.38,
+      "avg_purchase_rate_per_year": 11.75,
+      "avg_spend": 81.12,
+      "avg_previous_purchases": 25.37,
+      "discount_usage_pct": 0.0,
+      "subscriber_pct": 0.0,
+      "top_category": "Clothing",
+      "description": "Buys ~12\u00d7/yr, 0% use a discount, avg spend $81.12, 25 previous purchases, mostly Clothing"
+    },
+    {
+      "segment": "Discount-Driven \u00b7 Big-Spender",
+      "customers": 731,
+      "pct_of_base": 18.74,
+      "avg_purchase_rate_per_year": 12.38,
+      "avg_spend": 79.73,
+      "avg_previous_purchases": 25.57,
+      "discount_usage_pct": 100.0,
+      "subscriber_pct": 61.83,
+      "top_category": "Clothing",
+      "description": "Buys ~12\u00d7/yr, 100% use a discount, avg spend $79.73, 26 previous purchases, mostly Clothing"
+    },
+    {
+      "segment": "Discount-Driven \u00b7 Budget",
+      "customers": 712,
+      "pct_of_base": 18.26,
+      "avg_purchase_rate_per_year": 11.54,
+      "avg_spend": 38.63,
+      "avg_previous_purchases": 25.64,
+      "discount_usage_pct": 100.0,
+      "subscriber_pct": 62.36,
+      "top_category": "Clothing",
+      "description": "Buys ~12\u00d7/yr, 100% use a discount, avg spend $38.63, 26 previous purchases, mostly Clothing"
+    },
+    {
+      "segment": "High-Frequency",
+      "customers": 539,
+      "pct_of_base": 13.82,
+      "avg_purchase_rate_per_year": 52.0,
+      "avg_spend": 58.97,
+      "avg_previous_purchases": 25.77,
+      "discount_usage_pct": 43.41,
+      "subscriber_pct": 29.13,
+      "top_category": "Clothing",
+      "description": "Buys ~52\u00d7/yr, 43% use a discount, avg spend $58.97, 26 previous purchases, mostly Clothing"
+    }
+  ],
+  "pca": {
+    "explained_variance_ratio": [
+      0.3414403282310302,
+      0.33195756558934775
+    ]
+  },
+  "surrogate_tree": {
+    "note": "Surrogate explanation: a decision tree trained to imitate the K-Means segments. Not the segmentation model itself.",
+    "fidelity": 0.9953846153846154,
+    "feature_importances": {
+      "purchase_rate_per_year": 0.3025494414543812,
+      "purchase_amount": 0.23787747023244823,
+      "discount_flag": 0.4595730883131707
+    },
+    "rules": "|--- purchase_amount <= 60.5\n|   |--- discount_flag <= 0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Full-Price \u00b7 Budget\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|   |--- discount_flag >  0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Discount-Driven \u00b7 Budget\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|--- purchase_amount >  60.5\n|   |--- discount_flag <= 0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Big-Spender \u00b7 Full-Price\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n|   |--- discount_flag >  0.5\n|   |   |--- purchase_rate_per_year <= 39.0\n|   |   |   |--- class: Discount-Driven \u00b7 Big-Spender\n|   |   |--- purchase_rate_per_year >  39.0\n|   |   |   |--- class: High-Frequency\n"
+  },
+  "bi_weekly_sensitivity": {
+    "bi_weekly_per_year_tested": 104,
+    "chosen_feature_set": "rate_amt_disc",
+    "chosen_k": 5,
+    "silhouette": 0.4720682789062133,
+    "segment_sizes": {
+      "Full-Price \u00b7 Budget": 970,
+      "Big-Spender \u00b7 Full-Price": 932,
+      "Discount-Driven \u00b7 Budget": 740,
+      "Discount-Driven \u00b7 Big-Spender": 711,
+      "High-Frequency": 547
+    },
+    "adjusted_rand_index_vs_default": 0.6003151792038386,
+    "same_segments": false
+  }
+}
